@@ -38,15 +38,17 @@ function luaharfbuzz.shape_full(font, buffer, features, shapers) end
 function luaharfbuzz.shapers() end
 
 ---
----Wraps `hb_version`
+---Return the library version as a string with three components.
 ---
 ---* Corresponding C source code: [luaharfbuzz.c#L39-L42](https://github.com/ufyTeX/luaharfbuzz/blob/b3bdf5dc7a6e3f9b674226140c3dfdc73d2970cd/src/luaharfbuzz/luaharfbuzz.c#L39-L42)
+---
+---@return string
 ---
 ---😱 [Types](https://github.com/LuaCATS/luaharfbuzz/blob/main/library/luaharfbuzz.lua) incomplete or incorrect? 🙏 [Please contribute!](https://github.com/LuaCATS/luaharfbuzz/pulls)
 function luaharfbuzz.version() end
 
 ---
----Wraps `hb_shape`.
+---Shape `buffer` using `font` turning its Unicode characters content to positioned glyphs.
 ---
 ---* Corresponding C source code: [harfbuzz.lua#L22-L53](https://github.com/ufyTeX/luaharfbuzz/blob/b3bdf5dc7a6e3f9b674226140c3dfdc73d2970cd/src/harfbuzz.lua#L22-L53)
 ---
@@ -58,7 +60,7 @@ function luaharfbuzz.version() end
 function luaharfbuzz.shape(font, buffer, options) end
 
 ---
----Lua wrapper for `hb_blob_t` type
+---Blobs wrap a chunk of binary data to handle lifecycle management of data while it is passed between client and HarfBuzz. Blobs are primarily used to create font faces, but also to access font face tables, as well as pass around other binary data.
 ---
 ---@class Blob
 ---
@@ -67,12 +69,11 @@ local Blob = {}
 luaharfbuzz.Blob = Blob
 
 ---
----Wraps `hb_blob_create`.
----Initializes a new `hb_blob_t`.
+---Create a new "blob" object wrapping data.
 ---
 ---* Corresponding C source code: [blob.c#L3-L14](https://github.com/ufyTeX/luaharfbuzz/blob/b3bdf5dc7a6e3f9b674226140c3dfdc73d2970cd/src/luaharfbuzz/blob.c#L3-L14)
 ---
----@param data string # lua string containing binary or character data.
+---@param data string # A Lua string containing binary or character data.
 ---
 ---@return Blob
 ---
@@ -80,8 +81,7 @@ luaharfbuzz.Blob = Blob
 function Blob.new(data) end
 
 ---
----Wraps `hb_blob_create_from_file`.
----Initializes a new `hb_blob_t`.
+---Create a new blob containing the data from the specified binary font file.
 ---
 ---* Corresponding C source code: [blob.c#L16-L26](https://github.com/ufyTeX/luaharfbuzz/blob/b3bdf5dc7a6e3f9b674226140c3dfdc73d2970cd/src/luaharfbuzz/blob.c#L16-L26)
 ---
@@ -93,7 +93,7 @@ function Blob.new(data) end
 function Blob.new_from_file(filename) end
 
 ---
----Wraps `hb_blob_get_length`.
+---Fetch the length of a blob's data.
 ---
 ---* Corresponding C source code: [blob.c#L28-L33](https://github.com/ufyTeX/luaharfbuzz/blob/b3bdf5dc7a6e3f9b674226140c3dfdc73d2970cd/src/luaharfbuzz/blob.c#L28-L33)
 ---
@@ -103,17 +103,19 @@ function Blob.new_from_file(filename) end
 function Blob:get_length() end
 
 ---
----Wraps `hb_blob_get_data`.
+---Fetch the data from a blob.
 ---
 ---* Corresponding C source code: [blob.c#L35-L44](https://github.com/ufyTeX/luaharfbuzz/blob/b3bdf5dc7a6e3f9b674226140c3dfdc73d2970cd/src/luaharfbuzz/blob.c#L35-L44)
 ---
----@return string
+---@return string data # the byte data of blob as a string
 ---
 ---😱 [Types](https://github.com/LuaCATS/luaharfbuzz/blob/main/library/luaharfbuzz.lua) incomplete or incorrect? 🙏 [Please contribute!](https://github.com/LuaCATS/luaharfbuzz/pulls)
 function Blob:get_data() end
 
 ---
----Lua wrapper for `hb_face_t` type
+---A font face is an object that represents a single face from within a font family.
+---
+---More precisely, a font face represents a single face in a binary font file. Font faces are typically built from a binary blob and a face index. Font faces are used to create fonts.
 ---
 ---😱 [Types](https://github.com/LuaCATS/luaharfbuzz/blob/main/library/luaharfbuzz.lua) incomplete or incorrect? 🙏 [Please contribute!](https://github.com/LuaCATS/luaharfbuzz/pulls)
 ---@class Face
@@ -121,8 +123,9 @@ local Face = {}
 luaharfbuzz.Face = Face
 
 ---
----Wraps `hb_face_create`.
----Initializes a new `hb_face_t` from a `Blob` object.
+---Constructs a new face object from the specified blob and a face index into that blob.
+---
+---The face index is used for blobs of file formats such as TTC and DFont that can contain more than one face. Face indices within such collections are zero-based.
 ---
 ---* Corresponding C source code: [face.c#L28-L45](https://github.com/ufyTeX/luaharfbuzz/blob/b3bdf5dc7a6e3f9b674226140c3dfdc73d2970cd/src/luaharfbuzz/face.c#L28-L45)
 ---
@@ -136,6 +139,7 @@ function Face.new_from_blob(blob, font_index) end
 
 ---
 ---Create a new `Face` from a file.
+---
 ---Makes a call to `Face:new_from_blob` after creating a `Blob` from the
 ---file contents.
 ---
@@ -150,7 +154,7 @@ function Face.new_from_blob(blob, font_index) end
 function Face.new(file, font_index) end
 
 ---
----Wraps `hb_face_collect_unicodes`.
+---Collect all of the Unicode characters covered by face.
 ---
 ---* Corresponding C source code: [face.c#L264-L284](https://github.com/ufyTeX/luaharfbuzz/blob/b3bdf5dc7a6e3f9b674226140c3dfdc73d2970cd/src/luaharfbuzz/face.c#L264-L284)
 ---
@@ -160,13 +164,19 @@ function Face.new(file, font_index) end
 function Face:collect_unicodes() end
 
 ---
----Wraps `hb_face_get_glyph_count`.
+---Fetch the glyph-count value of the specified face object.
+---
+---* Corresponding C source code: [face.c#L47-L52](https://github.com/ufyTeX/luaharfbuzz/blob/b3bdf5dc7a6e3f9b674226140c3dfdc73d2970cd/src/luaharfbuzz/face.c#L47-L52)
 ---
 ---😱 [Types](https://github.com/LuaCATS/luaharfbuzz/blob/main/library/luaharfbuzz.lua) incomplete or incorrect? 🙏 [Please contribute!](https://github.com/LuaCATS/luaharfbuzz/pulls)
 function Face:get_glyph_count() end
 
 ---
+---Fetch a reference to the specified table within the specified face.
+---
 ---Wraps `hb_face_reference_table`.
+---
+---* Corresponding C source code: [face.c#L82-L94](https://github.com/ufyTeX/luaharfbuzz/blob/b3bdf5dc7a6e3f9b674226140c3dfdc73d2970cd/src/luaharfbuzz/face.c#L82-L94)
 ---
 ---@param tag Tag # `Tag` object of the table.
 ---
@@ -176,7 +186,11 @@ function Face:get_glyph_count() end
 function Face:get_table(tag) end
 
 ---
+---Fetches a list of all table tags for a face, if possible. The list returned will begin at the offset provided.
+---
 ---Wraps `hb_face_get_table_tags`.
+---
+---* Corresponding C source code: [face.c#L96-L124](https://github.com/ufyTeX/luaharfbuzz/blob/b3bdf5dc7a6e3f9b674226140c3dfdc73d2970cd/src/luaharfbuzz/face.c#L96-L124)
 ---
 ---@return Tag[] # table of `Tag`s representing face table tags.
 ---
@@ -244,7 +258,6 @@ function Face:ot_color_has_layers() end
 ---Wraps `hb_ot_color_glyph_get_layers`.
 ---
 ---* Corresponding C source code: [face.c#L356-L392](https://github.com/ufyTeX/luaharfbuzz/blob/b3bdf5dc7a6e3f9b674226140c3dfdc73d2970cd/src/luaharfbuzz/face.c#L356-L392)
----
 ---
 ---😱 [Types](https://github.com/LuaCATS/luaharfbuzz/blob/main/library/luaharfbuzz.lua) incomplete or incorrect? 🙏 [Please contribute!](https://github.com/LuaCATS/luaharfbuzz/pulls)
 function Face:ot_color_glyph_get_layers() end
@@ -645,7 +658,6 @@ Buffer.GLYPH_FLAG_DEFINED = 3
 
 ---
 ---Lua wrapper for `hb_feature_t` type
----
 ---
 ---😱 [Types](https://github.com/LuaCATS/luaharfbuzz/blob/main/library/luaharfbuzz.lua) incomplete or incorrect? 🙏 [Please contribute!](https://github.com/LuaCATS/luaharfbuzz/pulls)
 ---@class Feature
